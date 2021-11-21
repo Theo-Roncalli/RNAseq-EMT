@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-output_fastq=Data/Fastq
+output_fastq=Data/Reads
 output_trimming=Data/Trimming
-output_figures_fastq=Figures/Fastq
+output_figures_fastq=Figures/Reads
 output_figures_trimming=Figures/Trimming
 output_genome=Data/Genome
 output_index=Data/Index
@@ -74,11 +74,12 @@ mkdir ${output_counts} -p
 for first_read_file in ${output_trimming}/*1P.fastq
 do
 	paired_file_with_path=${first_read_file%_1P.fastq};
-	echo "Downaloading BAM file with ${paired_file_with_path#${output_trimming}/}..."; 
+	paired_file_without_path=${paired_file_with_path#${output_trimming}/};
+	echo "Downaloading BAM file with ${paired_file_without_path}..."; 
 	STAR --runThreadN ${nb_cpus_mapping} --outFilterMultimapNmax 1 \
 	--genomeDir ${output_index} \
 	--outSAMattributes All --outSAMtype BAM SortedByCoordinate \
-	--outFileNamePrefix ${output_counts}/${paired_file_with_path}_ \
+	--outFileNamePrefix ${output_counts}/${paired_file_without_path}_ \
 	--readFilesIn ${paired_file_with_path}_1P.fastq ${paired_file_with_path}_2P.fastq;
 done
 
