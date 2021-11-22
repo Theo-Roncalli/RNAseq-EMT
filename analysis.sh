@@ -30,7 +30,7 @@ tar -zxvf ${reads}/TPrnaseq.tar.gz -C ${reads}
 echo "--------Number of sequences per file--------"
 for file in ${reads}/*.fastq
 do
-	grep + $file | echo "$file  $(wc -l)";
+	grep ^+$ ${file} | echo "${file}  $(wc -l)";
 done
 
 # Quality control
