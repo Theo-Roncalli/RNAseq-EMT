@@ -21,6 +21,7 @@ annotation_url=ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_2
 
 nb_cpus_indexing=7
 nb_cpus_mapping=7
+nb_cpus_counting=7
 
 # Step 1: Download reads
 
@@ -101,41 +102,41 @@ done
 
 # Step 4: Index BAM (samtools index)
 
-samtools index ${mapping}.*bam
+for bam_file in ${mapping}/*.bam
+do
+	bam_file_without_path=${bam_file#${mapping}/};
+	echo "Indexing BAM file with ${bam_file_without_path}";
+	samtools index ${bam_file};
+	samtools stats ${bam_file};
+done
 
-samtools stats ${mapping}.*bam
-
-
-
-# samtools stats ${BAM} | less
-# SN      reads MQ0:      0       # mapped and MQ=0
-# SN      reads QC failed:        0
-# On n'a pas de problèmes car on a élaguer avec trimmomatic.
-# SN      inward oriented pairs:  273211
-# SN      outward oriented pairs: 12
-# On a un (petit) problème pour 12 reads. Il y a eu un réarrangement. En effet, 12 paires sont dans le même sens.
-
-# BAM file indexation
+# For more information about the indexation of a BAM file, please type: samtools stats ${mapping}/BAM_file | less
 
 for file in ${mapping}/*.bam
 do
-	paired_file_without_path=${paired_file_with_path#${trimming}/};
-	echo "Indexation of ${file}"
-	samtools index ${file}
+	bam_file_without_path=${bam_file#${mapping}/};
+	samtools index ${bam_file};
 done
 
-# Creation of mapping matrix
+# samtools stats ${mapping}/Day_0_1_chr18.sampled_Aligned.sortedByCoord.out.bam | less
+# SN      reads MQ0:      0       # mapped and MQ=0
+# SN      reads QC failed:        0
+# There is no issue since we have prune with trimmomatic.
+# SN      inward oriented pairs:  314156
+# SN      outward oriented pairs: 10
+# There is a problem for 10 reads. Indeed, there have been a rearrangement since 10 pairs are in the same reading frame.
+
+# Step 5: Counting (featureCounts)
+
+# If not already install, please type: apt-get install subread
 
 mkdir -p ${counts}
-featureCounts -p -T 7 -t gene -g gene_id -s 0 -a ${genome}/*.gtf -o ${counts}/counts.txt ${mapping}/*.bam
+featureCounts -p -T ${nb_cpus_counting} -t gene -g gene_id -s 0 -a ${genome}/*.gtf -o ${counts}/counts.txt ${mapping}/*.bam
 
+# Create a file with pairs between ENCODE and HUGO identifier
 perl -ne 'print "$1 $2\n" if /gene_id \"(.*?)\".*gene_name \"(.*?)\"/' \
-	${genome}/*.gtf | sort | uniq > temp
+	${genome}/*.gtf | sort | uniq > encode-to-hugo.tab
 
-sort counts.txt > temp1
-sort temp > temp2
-join temp1 temp2 |grep "chr18" > temp3
-
-
-# featureCounts -p -T 7 -t gene -g gene_id -s 0 -a Homo_sapiens.GRCh38.99.gtf -o counts.txt SRR628582.bam SRR628584.bam SRR628585.bam SRR628583.bam SRR628587.bam SRR628589.bam SRR628586.bam SRR628588.bam
-# featureCounts -p -T 7 -t gene -g gene_id -s 0 -a Data/Genome/gencode.v24lift37.basic.annotation.gtf -o counts.txt Data/Mapping/Day_0_1_chr18.sampled_Aligned.sortedByCoord.out.bam Data/Mapping/Day_0_2_chr18.sampled_Aligned.sortedByCoord.out.bam
+sort ${counts}/counts.txt > ${counts}/sort_counts.txt
+join ${counts}/sort_counts.txt encode-to-hugo.tab | grep "chr18" > ${counts}/paired_counts.txt
+rm encode-to-hugo.tab ${counts}/sort_counts.txt
