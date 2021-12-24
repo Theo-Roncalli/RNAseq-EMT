@@ -20,6 +20,7 @@ nb_cpus_counting=7
 # Colors
 
 RED='\033[0;31m'
+GREEN='\033[0;32m'
 NC='\033[0m' # No Color
 
 # Step 1: Quality control + Reads cleaning
@@ -127,11 +128,11 @@ then
 	join ${counts}/encode-to-hugo.tab ${counts}/sort_counts.txt | grep "chr18" > ${counts}/paired_counts.txt
 	awk '{print $2 " " $8 " " $9 " " $10 " " $11 " " $12 " " $13}' ${counts}/paired_counts.txt > ${counts}/hugo-counts.txt
 	echo "Done."
-	echo -e "\n\n${RED}The final file to use is ${counts}/hugo-counts.txt.${NC}"
-	echo -e "${RED}It contains, for each HUGO codes in Chromosome 18, the numbers of reads per gene and per observation.${NC}"
+	echo -e "\n${GREEN}The final file to use is ${counts}/hugo-counts.txt.${NC}"
+	echo -e "${GREEN}It contains, for each HUGO codes in Chromosome 18, the numbers of reads per gene and per observation.${NC}\n"
 else
-    echo -e "${RED}The creation of a file containing the HUGO codes${NC}"
+    echo -e "\n${RED}The creation of a file containing the HUGO codes${NC}"
 	echo -e "${RED}and numbers of reads per gene and per observation${NC}"
 	echo -e "${RED}is not available since the number of genes is not the same${NC}"
-	echo -e "${RED}between the encode-to-hugo.tab and sort_counts.txt files.${NC}"
+	echo -e "${RED}between the encode-to-hugo.tab and sort_counts.txt files.${NC}\n"
 fi
