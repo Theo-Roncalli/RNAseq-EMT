@@ -108,8 +108,26 @@ featureCounts -p -T ${nb_cpus_counting} -t gene -g gene_id -s 0 -a ${genome}/*.g
 
 # Create a file with pairs between ENCODE and HUGO identifiers
 perl -ne 'print "$1 $2\n" if /gene_id \"(.*?)\".*gene_name \"(.*?)\"/' \
-	${genome}/*.gtf | sort | uniq > encode-to-hugo.tab
+	${genome}/*.gtf | sort | uniq > ${counts}/encode-to-hugo.tab
 
 sort ${counts}/counts.txt > ${counts}/sort_counts.txt
-join ${counts}/sort_counts.txt encode-to-hugo.tab | grep "chr18" > ${counts}/paired_counts.txt
-rm encode-to-hugo.tab ${counts}/sort_counts.txt
+
+# Before joining the two files encode-to-hugo.tab and sort_counts.txt, we remove the lines which does not contain counting
+sed -i '/^[#|Geneid]/d' ${counts}/sort_counts.txt
+# For verifying that the lines are effectively removed, please type: tail ${counts}/sort_counts.txt
+
+if [ $(cat ${counts}/encode-to-hugo.tab | wc -l) == $(cat ${counts}/sort_counts.txt | wc -l) ]
+then
+	echo "Creation of the hugo-counts.txt file..."
+	join ${counts}/encode-to-hugo.tab ${counts}/sort_counts.txt | grep "chr18" > ${counts}/paired_counts.txt
+	awk '{print $2 " " $8 " " $9 " " $10 " " $11 " " $12 " " $13}' ${counts}/paired_counts.txt > ${counts}/hugo-counts.txt
+	echo "Done."
+	echo "The final file to use is ${counts}/hugo-counts.txt."
+	echo "It contains, for each HUGO codes in Chromosome 18, the numbers of reads per gene and per observation."
+else
+    echo "The creation of a file containing the HUGO codes"
+	echo "and numbers of reads per gene and per observation"
+	echo "is not available since the number of genes is not the same"
+	echo "between the encode-to-hugo.tab and sort_counts.txt files."
+fi
+
