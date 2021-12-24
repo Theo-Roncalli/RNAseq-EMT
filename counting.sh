@@ -17,9 +17,15 @@ nb_cpus_indexing=7
 nb_cpus_mapping=7
 nb_cpus_counting=7
 
+# Colors
+
+RED='\033[0;31m'
+NC='\033[0m' # No Color
+
 # Step 1: Quality control + Reads cleaning
 
 mkdir -p ${figures_reads}
+echo "Creation of the fastqc files on raw reads."
 fastqc -o ${figures_reads} -f fastq ${reads}/*.fastq -q
 
 # Trimming procedure (Elimination of low quality sequences at the end of reads)
@@ -40,6 +46,7 @@ done
 # Remark: files 1U and 2U returns a small number of sequences (around 10 000) while files 1P and 2P returns a large number of sequences (a little smaller than the reads without cleaning)
 
 mkdir -p ${figures_trimming}
+echo "Creation of the fastqc files on trimmed reads."
 fastqc -o ${figures_trimming} -f fastq ${trimming}/*.fastq -q
 
 # Step 2: Mapping
@@ -120,11 +127,11 @@ then
 	join ${counts}/encode-to-hugo.tab ${counts}/sort_counts.txt | grep "chr18" > ${counts}/paired_counts.txt
 	awk '{print $2 " " $8 " " $9 " " $10 " " $11 " " $12 " " $13}' ${counts}/paired_counts.txt > ${counts}/hugo-counts.txt
 	echo "Done."
-	echo "The final file to use is ${counts}/hugo-counts.txt."
-	echo "It contains, for each HUGO codes in Chromosome 18, the numbers of reads per gene and per observation."
+	echo -e "\n\n${RED}The final file to use is ${counts}/hugo-counts.txt.${NC}"
+	echo -e "${RED}It contains, for each HUGO codes in Chromosome 18, the numbers of reads per gene and per observation.${NC}"
 else
-    echo "The creation of a file containing the HUGO codes"
-	echo "and numbers of reads per gene and per observation"
-	echo "is not available since the number of genes is not the same"
-	echo "between the encode-to-hugo.tab and sort_counts.txt files."
+    echo -e "${RED}The creation of a file containing the HUGO codes${NC}"
+	echo -e "${RED}and numbers of reads per gene and per observation${NC}"
+	echo -e "${RED}is not available since the number of genes is not the same${NC}"
+	echo -e "${RED}between the encode-to-hugo.tab and sort_counts.txt files.${NC}"
 fi
