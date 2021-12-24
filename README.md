@@ -1,6 +1,6 @@
 # New Generation Sequencing (NGS)
 
-This work focuses on the study of [Yang et al. (2016)](http://www.ncbi.nlm.nih.gov/pubmed/?term=27044866) who were interested in the epthithelium-mesenchymal transition (EMT) process. In their work, the EMT has been induced by ectopic expression of Zeb1 in a cell lung cancer cell line (H358). The authors have studied RNAseq data over 7 days, starting from uninduced cells.
+This work focuses on the study of [Yang et al. (2016)](http://www.ncbi.nlm.nih.gov/pubmed/?term=27044866) who were interested in the epthithelium-mesenchymal transition (EMT) process. In their work, the EMT has been induced by ectopic expression of Zeb1 in a lung cancer cell line (H358). The authors have studied RNAseq data over 7 days, starting from uninduced cells.
 
 The initial data are available on the [NCBI site](http://www.ncbi.nlm.nih.gov/sra?term=SRP066794). In order to reduce time computation, we used only 0.5% of the total RNAseq data at the following address: http://rssf.i2bc.paris-saclay.fr/X-fer/AtelierNGS/TPrnaseq.tar.gz
 
