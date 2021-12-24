@@ -113,9 +113,14 @@ perl -ne 'print "$1 $2\n" if /gene_id \"(.*?)\".*gene_name \"(.*?)\"/' \
 sort ${counts}/counts.txt > ${counts}/sort_counts.txt
 
 # Before joining the two files encode-to-hugo.tab and sort_counts.txt, we remove the lines which does not contain counting
+# Indeed, the counts.txt file contains a header wich is the footer of the sort_counts.txt file.
+# Indeed, there are these two lines:
+# # Program:featureCounts v1.6.0; Command:"featureCounts" "-p" "-T" "7" "-t" "gene" "-g" "gene_id" "-s" "0" "-a" "Data/Genome/gencode.v24lift37.basic.annotation.gtf" "-o" "Data/Counts/counts.txt" "Data/Mapping/Day_0_1_chr18.sampled_Aligned.sortedByCoord.out.bam" "Data/Mapping/Day_0_2_chr18.sampled_Aligned.sortedByCoord.out.bam" "Data/Mapping/Day_0_3_chr18.sampled_Aligned.sortedByCoord.out.bam" "Data/Mapping/Day_7_1_chr18.sampled_Aligned.sortedByCoord.out.bam" "Data/Mapping/Day_7_2_chr18.sampled_Aligned.sortedByCoord.out.bam" "Data/Mapping/Day_7_3_chr18.sampled_Aligned.sortedByCoord.out.bam"
+# Geneid	Chr	Start	End	Strand	Length	Data/Mapping/Day_0_1_chr18.sampled_Aligned.sortedByCoord.out.bam	Data/Mapping/Day_0_2_chr18.sampled_Aligned.sortedByCoord.out.bam	Data/Mapping/Day_0_3_chr18.sampled_Aligned.sortedByCoord.out.bam	Data/Mapping/Day_7_1_chr18.sampled_Aligned.sortedByCoord.out.bam	Data/Mapping/Day_7_2_chr18.sampled_Aligned.sortedByCoord.out.bam	Data/Mapping/Day_7_3_chr18.sampled_Aligned.sortedByCoord.out.bam
 sed -i '/^[#|Geneid]/d' ${counts}/sort_counts.txt
-# For verifying that the lines are effectively removed, please type: tail ${counts}/sort_counts.txt
+# For verifying that the footer is effectively removed, please type: tail ${counts}/sort_counts.txt
 
+# Creation of the hugo-counts.txt file which contains, for each HUGO codes in Chromosome 18, the numbers of reads per gene and per observation.
 if [ $(cat ${counts}/encode-to-hugo.tab | wc -l) == $(cat ${counts}/sort_counts.txt | wc -l) ]
 then
 	echo "Creation of the hugo-counts.txt file..."
@@ -130,4 +135,3 @@ else
 	echo "is not available since the number of genes is not the same"
 	echo "between the encode-to-hugo.tab and sort_counts.txt files."
 fi
-
