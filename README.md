@@ -1,14 +1,8 @@
----
-title: "Analysis of human differentially expressed genes during the EMT process"
-author: "Théo Roncalli"
-date: "24 décembre 2021"
----
-
 # New Generation Sequencing (NGS)
 
-The present working is about the study of [Yang et al. (2016)](http://www.ncbi.nlm.nih.gov/pubmed/?term=27044866) who were interested in the epthithelium-mesenchymal transition (EMT) process. In their work, the EMT has been induced by ectopic expression of Zeb1 in a cell lung cancer cell line (H358). The author have studied RNAseq data over 7 days, starting from uninduced cells.
+This work focuses on the study of [Yang et al. (2016)](http://www.ncbi.nlm.nih.gov/pubmed/?term=27044866) who were interested in the epthithelium-mesenchymal transition (EMT) process. In their work, the EMT has been induced by ectopic expression of Zeb1 in a cell lung cancer cell line (H358). The authors have studied RNAseq data over 7 days, starting from uninduced cells.
 
-The initial data are available on the [NCBI site](http://www.ncbi.nlm.nih.gov/sra?term=SRP066794). In order to reduce time computation, we used only 0.5% of the total RNAseq data at the following adress: http://rssf.i2bc.paris-saclay.fr/X-fer/AtelierNGS/TPrnaseq.tar.gz
+The initial data are available on the [NCBI site](http://www.ncbi.nlm.nih.gov/sra?term=SRP066794). In order to reduce time computation, we used only 0.5% of the total RNAseq data at the following address: http://rssf.i2bc.paris-saclay.fr/X-fer/AtelierNGS/TPrnaseq.tar.gz
 
 ## Dependencies
 
@@ -27,7 +21,7 @@ A machine with at least 16 GB of **FREE** RAM (to create the index and the mappi
 
 ## Executing The Pipeline
 
-The pipeline is used to create a file named "hugo-counts.txt" to which is associated, for each gene, the HUGO identifier and the number of reads aligned for each observation. This file is available in the repository _Data/Counts_. The steps are as follows.
+The pipeline is used to create a file named "hugo-counts.txt" to which is associated, for each gene, the HUGO identifier and the number of reads aligned for each observation. This file is available in the repository _Data/Counts_. The steps are the followings.
 
 1. Clone the Github repository to your machine
 ```bash
@@ -47,4 +41,7 @@ bash counting.sh
 
 ## Cleaning Repository
 
-For cleaning the reposi
+For cleaning the repository (i.e. delete _Data_ and _Figures_ folders), please type:
+```bash
+bash clean.sh
+```
