@@ -80,16 +80,9 @@ do
 	bam_file_without_path=${bam_file#${mapping}/};
 	echo "Indexing BAM file with ${bam_file_without_path}";
 	samtools index ${bam_file};
-	samtools stats ${bam_file};
 done
 
 # For more information about the indexation of a BAM file, please type: samtools stats ${mapping}/BAM_file | less
-
-for file in ${mapping}/*.bam
-do
-	bam_file_without_path=${bam_file#${mapping}/};
-	samtools index ${bam_file};
-done
 
 # samtools stats ${mapping}/Day_0_1_chr18.sampled_Aligned.sortedByCoord.out.bam | less
 # SN      reads MQ0:      0       # mapped and MQ=0
@@ -120,7 +113,7 @@ sort ${counts}/counts.txt > ${counts}/sort_counts.txt
 sed -i '/^[#|Geneid]/d' ${counts}/sort_counts.txt
 # For verifying that the footer is effectively removed, please type: tail ${counts}/sort_counts.txt
 
-# Creation of the hugo-counts.txt file which contains, for each HUGO codes in Chromosome 18, the numbers of reads per gene and per observation.
+# Creation of the hugo-counts.txt file which contains, for each HUGO code in Chromosome 18, the numbers of reads per gene and per observation.
 if [ $(cat ${counts}/encode-to-hugo.tab | wc -l) == $(cat ${counts}/sort_counts.txt | wc -l) ]
 then
 	echo "Creation of the hugo-counts.txt file..."
