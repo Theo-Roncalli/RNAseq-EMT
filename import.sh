@@ -16,13 +16,13 @@ annotation_url=ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_2
 mkdir -p ${reads}
 echo "Downloading reads..."
 wget ${reads_url} -P ${reads}
-echo "Unarchive reads..."
+echo "Unarchiving reads..."
 tar -zxf ${reads}/TPrnaseq.tar.gz -C ${reads}
 
-echo "--------Number of sequences per file--------"
+echo "--------Number of reads per file--------"
 for file in ${reads}/*.fastq
 do
-	grep ^+$ ${file} | echo "${file}  $(wc -l)";
+	grep ^+$ ${file} | echo "${file}: $(wc -l) reads";
 done
 
 # Step 2: download reference genome
