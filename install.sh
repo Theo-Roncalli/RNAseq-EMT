@@ -32,7 +32,7 @@ tar -zxf ${reads}/TPrnaseq.tar.gz -C ${reads}
 echo -e "${GREEN}Done.${NC}"
 
 
-echo "-----------Number of reads per file-----------"
+echo -e "\n${BLUE}---------------Number of reads per file---------------${NC}"
 for file in ${reads}/*.fastq
 do
 	grep ^+$ ${file} | echo "${file}: $(wc -l) reads";

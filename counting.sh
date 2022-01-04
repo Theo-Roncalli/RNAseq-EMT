@@ -2,14 +2,11 @@
 
 # Directory parameters
 
-reads=Data/Reads
 trimming=Data/Trimming
 genome=Data/Genome
 index=Data/Index
 mapping=Data/Mapping
 counts=Data/Counts
-figures_reads=Figures/Reads
-figures_trimming=Figures/Trimming
 
 # Performance parameters
 
@@ -17,49 +14,25 @@ nb_cpus_indexing=7
 nb_cpus_mapping=7
 nb_cpus_counting=7
 
-# Colors
+# Color parameters
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-NC='\033[0m' # No Color
+RED='\033[1;31m'
+GREEN='\033[1;32m'
+BLUE='\033[1;34m'
+NC='\033[0m'
 
-# Step 1: Quality control + Reads cleaning
-
-mkdir -p ${figures_reads}
-echo "Creation of the fastqc files on raw reads."
-fastqc -o ${figures_reads} -f fastq ${reads}/*.fastq -q
-
-# Trimming procedure (Elimination of low quality sequences at the end of reads)
-# conda install -c bioconda trimmomatic
-
-mkdir -p ${trimming}
-
-for read1_file in ${reads}/*.R1.fastq
-do
-	paired_file_with_path=${read1_file%.R1.fastq};
-	paired_file_without_path=${paired_file_with_path#${reads}/};
-	echo "Trimming ${paired_file_without_path%.sampled}...";
-	trimmomatic PE ${paired_file_with_path}.R1.fastq ${paired_file_with_path}.R2.fastq -baseout ${trimming}/${paired_file_without_path}.fastq LEADING:20 TRAILING:20 MINLEN:50 -quiet
-	echo "Done."
-done
-
-# Removal of the bases from the extremity with a quality lower than 20. If the final read is smaller than 50, it is discarded. file with U => discard. file with P => no discard.
-# Remark: files 1U and 2U returns a small number of sequences (around 10 000) while files 1P and 2P returns a large number of sequences (a little smaller than the reads without cleaning)
-
-mkdir -p ${figures_trimming}
-echo "Creation of the fastqc files on trimmed reads."
-fastqc -o ${figures_trimming} -f fastq ${trimming}/*.fastq -q
-
-# Step 2: Mapping
+# Step 1: Mapping
 
 #### Index (STAR) ####
 
 mkdir ${index} -p
+echo -e "\n${BLUE}Creating the index on ${genome}/chr18.fa...${NC}"
 STAR --runMode genomeGenerate --runThreadN ${nb_cpus_indexing} \
 	--genomeSAindexNbases 12 \
 	--genomeDir ${index} \
 	--genomeFastaFiles ${genome}/chr18.fa \
 	--sjdbGTFfile ${genome}/gencode.v24lift37.basic.annotation.gtf
+echo -e "${GREEN}Done.${NC}\n"
 
 #### Mapping (STAR) ####
 
@@ -68,12 +41,13 @@ for read1_file in ${trimming}/*1P.fastq
 do
 	paired_file_with_path=${read1_file%_1P.fastq};
 	paired_file_without_path=${paired_file_with_path#${trimming}/};
-	echo "Downloading BAM file with ${paired_file_without_path}..."; 
+	echo -e "${BLUE}Downloading BAM file with ${paired_file_without_path}...${NC}";
 	STAR --runThreadN ${nb_cpus_mapping} --outFilterMultimapNmax 1 \
 	--genomeDir ${index} \
 	--outSAMattributes All --outSAMtype BAM SortedByCoordinate \
 	--outFileNamePrefix ${mapping}/${paired_file_without_path}_ \
 	--readFilesIn ${paired_file_with_path}_1P.fastq ${paired_file_with_path}_2P.fastq;
+    echo -e "${GREEN}Done.${NC}\n";
 done
 
 # Be careful : we cannot use the files 1U and 2U because the number of returned sequences is not the same.
@@ -86,8 +60,9 @@ done
 for bam_file in ${mapping}/*.bam
 do
 	bam_file_without_path=${bam_file#${mapping}/};
-	echo "Indexing BAM file with ${bam_file_without_path}";
+    echo -e "${BLUE}Indexing ${bam_file_without_path}...${NC}";
 	samtools index ${bam_file};
+    echo -e "${GREEN}Done.${NC}\n";
 done
 
 # For more information about the indexation of a BAM file, please type: samtools stats ${mapping}/BAM_file | less
@@ -105,13 +80,19 @@ done
 # If not already install, please type: apt-get install subread
 
 mkdir -p ${counts}
+echo -e "${BLUE}Running featureCounts...${NC}"
 featureCounts -p -T ${nb_cpus_counting} -t gene -g gene_id -s 0 -a ${genome}/*.gtf -o ${counts}/counts.txt ${mapping}/*.bam
+echo -e "${GREEN}Done.${NC}\n"
 
 # Create a file with pairs between ENCODE and HUGO identifiers
+echo -e "${BLUE}Creating file with pairs between ENCODE and HUGO identifiers...${NC}";
 perl -ne 'print "$1 $2\n" if /gene_id \"(.*?)\".*gene_name \"(.*?)\"/' \
 	${genome}/*.gtf | sort | uniq > ${counts}/encode-to-hugo.tab
+echo -e "${GREEN}Done.${NC}\n"
 
+echo -e "${BLUE}Sorting ${counts}/counts.txt file...${NC}"
 sort ${counts}/counts.txt > ${counts}/sort_counts.txt
+echo -e "${GREEN}Done.${NC}\n"
 
 # Before joining the two files encode-to-hugo.tab and sort_counts.txt, we remove the lines which does not contain counting
 # Indeed, the counts.txt file contains a header wich is the footer of the sort_counts.txt file.
@@ -124,15 +105,17 @@ sed -i '/^[#|Geneid]/d' ${counts}/sort_counts.txt
 # Creation of the hugo-counts.txt file which contains, for each HUGO code in Chromosome 18, the numbers of reads per gene and per observation.
 if [ $(cat ${counts}/encode-to-hugo.tab | wc -l) == $(cat ${counts}/sort_counts.txt | wc -l) ]
 then
-	echo "Creation of the hugo-counts.txt file..."
+	echo -e "${BLUE}Creation of the hugo-counts.txt file...${NC}"
 	join ${counts}/encode-to-hugo.tab ${counts}/sort_counts.txt | grep "chr18" > ${counts}/paired_counts.txt
 	awk '{print $2 " " $8 " " $9 " " $10 " " $11 " " $12 " " $13}' ${counts}/paired_counts.txt > ${counts}/hugo-counts.txt
-	echo "Done."
-	echo -e "\n${GREEN}The final file to use is ${counts}/hugo-counts.txt.${NC}"
-	echo -e "${GREEN}It contains, for each HUGO codes in Chromosome 18, the numbers of reads per gene and per observation.${NC}\n"
+	echo -e "${GREEN}Done.${NC}\n";
+	echo -e "\n${GREEN}The final file to use is ${counts}/hugo-counts.txt."
+	echo -e "It contains, for each HUGO codes in Chromosome 18, the numbers of reads per gene and per observation.${NC}\n"
+	exit 0
 else
-    echo -e "\n${RED}The creation of a file containing the HUGO codes${NC}"
-	echo -e "${RED}and numbers of reads per gene and per observation${NC}"
-	echo -e "${RED}is not available since the number of genes is not the same${NC}"
-	echo -e "${RED}between the encode-to-hugo.tab and sort_counts.txt files.${NC}\n"
+    echo -e "\n${RED}The creation of a file containing the HUGO codes"
+	echo -e "and numbers of reads per gene and per observation"
+	echo -e "is not available since the number of genes is not the same"
+	echo -e "between the encode-to-hugo.tab and sort_counts.txt files.${NC}\n"
+	exit 1
 fi
