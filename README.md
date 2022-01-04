@@ -11,8 +11,8 @@ Some package are required for launching some commands such as fastqc, trimmomati
 
 ```bash
 sudo apt-get install -y fastqc # For using fastqc
-sudo apt-get install -y subread # For using featureCounts
 conda install -c bioconda trimmomatic # For using trimmomatic
+sudo apt-get install -y subread # For using featureCounts
 ```
 
 ## Hardware requirements
