@@ -31,7 +31,7 @@ cd RNAseq-EMT
 
 2. Importation of reads and reference genome
 ```bash
-bash import.sh
+bash install.sh
 ```
 
 3. Creation of the counting file which contains, for each HUGO code in Chromosome 18, the numbers of reads per gene and per observation.
